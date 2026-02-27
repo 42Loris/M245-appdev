@@ -4,7 +4,7 @@ import { users, onboardingWorkflows, onboardingProfiles } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import ActiveWorkflowsTable from "@/components/dashboard/ActiveWorkflowsTable";
-import StatCard from "@/components/ui/StatCard";
+import { StatCard } from "@/components/ui/StatCard";
 import { UserPlus, Clock, CheckCircle2 } from "lucide-react";
 import TriggerOnboardingButton from "@/components/dashboard/TriggerOnboardingButton";
 import { seedDashboardData } from "@/actions/seed";
