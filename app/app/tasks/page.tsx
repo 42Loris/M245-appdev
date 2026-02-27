@@ -4,10 +4,9 @@ import { eq } from "drizzle-orm";
 import { users, onboardingWorkflows } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import StatusDropdown from "@/components/tasks/StatusDropdown";
+import TaskCard from "@/components/tasks/TaskCard";
 
-export default async function ITTasksPage() {
+export default async function TasksPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -17,6 +16,7 @@ export default async function ITTasksPage() {
   });
   if (!dbUser) redirect("/app/dashboard");
 
+  // Fetch workflows and strictly include ONLY IT and Hardware tasks
   const workflows = await db.query.onboardingWorkflows.findMany({
     where: eq(onboardingWorkflows.orgId, dbUser.orgId),
     with: {
@@ -25,6 +25,7 @@ export default async function ITTasksPage() {
     },
   });
 
+  // Flatten and filter the tasks for the IT Board
   const itTasks = workflows.flatMap((wf: any) => 
     (wf.tasks || [])
       .filter((t: any) => t.taskType === "IT_ACCESS" || t.taskType === "HARDWARE")
@@ -35,44 +36,59 @@ export default async function ITTasksPage() {
       }))
   );
 
+  // Group tasks by status for the Kanban-style columns
+  const pendingTasks = itTasks.filter(t => t.status === "PENDING");
+  const inProgressTasks = itTasks.filter(t => t.status === "IN_PROGRESS" || t.status === "BLOCKED");
+  const doneTasks = itTasks.filter(t => t.status === "DONE");
+
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">IT & Hardware Tasks</h1>
-        <p className="text-sm text-slate-500">Manage equipment and system access for new hires.</p>
+        <h1 className="text-2xl font-bold text-slate-900">IT Provisioning Tasks</h1>
+        <p className="text-sm text-slate-500">Manage AD accounts, permissions, and hardware preparation.</p>
       </header>
 
-      <div className="rounded-md border bg-white">
-        <Table>
-          <TableHeader className="bg-slate-50">
-            <TableRow>
-              <TableHead className="font-medium">Task</TableHead>
-              <TableHead className="font-medium">Employee</TableHead>
-              <TableHead className="font-medium">Role</TableHead>
-              <TableHead className="font-medium text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {itTasks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-slate-500 py-8">
-                  No IT tasks pending.
-                </TableCell>
-              </TableRow>
-            ) : (
-              itTasks.map((task: any) => (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium text-slate-900">{task.title}</TableCell>
-                  <TableCell className="text-slate-600">{task.employeeName}</TableCell>
-                  <TableCell className="text-slate-600">{task.role}</TableCell>
-                  <TableCell className="text-right">
-                    <StatusDropdown taskId={task.id} currentStatus={task.status} />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* PENDING COLUMN */}
+        <div className="bg-slate-100 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="font-semibold text-slate-700">Pending</h2>
+            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-full">{pendingTasks.length}</span>
+          </div>
+          <div className="space-y-4">
+            {pendingTasks.map(task => (
+              <TaskCard key={task.id} task={task} employeeName={task.employeeName} role={task.role} />
+            ))}
+            {pendingTasks.length === 0 && <p className="text-sm text-slate-400 text-center py-4">No pending tasks</p>}
+          </div>
+        </div>
+
+        {/* IN PROGRESS / BLOCKED COLUMN */}
+        <div className="bg-slate-100 rounded-lg p-4 border-t-4 border-blue-500">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="font-semibold text-slate-700">In Progress</h2>
+            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-full">{inProgressTasks.length}</span>
+          </div>
+          <div className="space-y-4">
+            {inProgressTasks.map(task => (
+              <TaskCard key={task.id} task={task} employeeName={task.employeeName} role={task.role} />
+            ))}
+            {inProgressTasks.length === 0 && <p className="text-sm text-slate-400 text-center py-4">Nothing in progress</p>}
+          </div>
+        </div>
+
+        {/* DONE COLUMN */}
+        <div className="bg-slate-100 rounded-lg p-4 border-t-4 border-green-500">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="font-semibold text-slate-700">Completed</h2>
+            <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-full">{doneTasks.length}</span>
+          </div>
+          <div className="space-y-4">
+            {doneTasks.map(task => (
+              <TaskCard key={task.id} task={task} employeeName={task.employeeName} role={task.role} />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
