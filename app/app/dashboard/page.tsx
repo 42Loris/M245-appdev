@@ -1,4 +1,5 @@
-import { db } from "@/db";
+import { users, onboardingWorkflows } from "@/db/schema";
+import { users, onboardingWorkflows, onboardingProfiles } from "@/db/schema";
 import TriggerOnboardingButton from "@/components/dashboard/TriggerOnboardingButton";
 import { eq } from "drizzle-orm";
 import { users, onboardingWorkflows } from "@/db/schema";
@@ -8,7 +9,6 @@ import ActiveWorkflowsTable from "@/components/dashboard/ActiveWorkflowsTable";
 import { StatCard } from "@/components/ui/StatCard";
 import { seedDashboardData } from "@/actions/seed";
 import { Button } from "@/components/ui/button";
-import { users, onboardingWorkflows, onboardingProfiles } from "@/db/schema";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
