@@ -1,6 +1,9 @@
 // app/auth/callback/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { db } from '@/db';
+import { users } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -9,10 +12,41 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (!error) {
-      // Erfolgreich eingeloggt -> ab zum Dashboard!
+    if (!authError && authData.user) {
+      const authUser = authData.user;
+
+      try {
+        // 1. Prüfen, ob der Nutzer bereits in unserer Postgres-Datenbank existiert
+        const existingUser = await db.query.users.findFirst({
+          where: eq(users.authId, authUser.id),
+        });
+
+        // 2. Wenn er nicht existiert (erster Login via Microsoft!), legen wir ihn an
+        if (!existingUser) {
+          // Wir suchen die erste Organisation im System als Fallback (für die Dev-Phase)
+          // Später mappen wir das anhand der E-Mail-Domain auf den richtigen Tenant!
+          const defaultOrg = await db.query.organizations.findFirst();
+
+          if (defaultOrg) {
+            await db.insert(users).values({
+              authId: authUser.id,
+              email: authUser.email || '',
+              name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'SSO User',
+              role: 'EMPLOYEE', // Standardmäßig ist jeder neue SSO-Nutzer erst mal ein normaler Angestellter
+              department: 'General', 
+              orgId: defaultOrg.id, 
+            });
+          }
+        }
+      } catch (dbError) {
+        console.error("Fehler beim Synchronisieren des SSO-Nutzers mit der DB:", dbError);
+        // Wir lassen ihn trotzdem zum Dashboard, auch wenn der Sync fehlschlägt,
+        // das Layout wird ihn dann entsprechend behandeln.
+      }
+
+      // Erfolgreich eingeloggt und synchronisiert -> ab zum Dashboard!
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
