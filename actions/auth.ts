@@ -42,3 +42,28 @@ export async function signOutAction() {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+export async function signInWithMicrosoftAction() {
+  const supabase = await createClient();
+  
+  // WICHTIG: Ersetze http://localhost:3000 später durch deine Vercel-URL, 
+  // wenn du es live testest (oder nutze eine Umgebungsvariable)
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'azure',
+    options: {
+      scopes: 'email profile', // Wir fragen nach Email und Profilbild
+      redirectTo: `${siteUrl}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    console.error("OAuth Error:", error.message);
+    redirect("/login?error=microsoft_auth_failed");
+  }
+
+  if (data.url) {
+    redirect(data.url); // Schickt den Nutzer zur Microsoft-Seite
+  }
+}
