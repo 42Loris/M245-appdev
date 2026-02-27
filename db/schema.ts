@@ -59,6 +59,18 @@ export const workflowTasks = pgTable("workflow_tasks", {
 });
 
 // Relations 
+export const usersRelations = relations(users, ({ many }) => ({
+  workflows: many(onboardingWorkflows),
+}));
+
+export const onboardingWorkflowsRelations = relations(onboardingWorkflows, ({ one, many }) => ({
+  newHire: one(users, {
+    fields: [onboardingWorkflows.newHireId],
+    references: [users.id],
+  }),
+  tasks: many(workflowTasks),
+}));
+
 export const workflowTasksRelations = relations(workflowTasks, ({ one }) => ({
   workflow: one(onboardingWorkflows, {
     fields: [workflowTasks.workflowId],
