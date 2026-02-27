@@ -11,10 +11,11 @@ import {
   Settings,
   Hexagon,
   ClipboardCheck,
-  UserCircle
+  UserCircle,
+  LogOut // <-- 1. Add this icon
 } from "lucide-react";
+import { signOutAction } from "@/actions/auth"; // <-- 2. Import the action
 
-// 1. Define the props we expect from the server layout
 type SidebarProps = {
   userRole: string;
   userName: string;
@@ -24,7 +25,6 @@ type SidebarProps = {
 export default function Sidebar({ userRole, userName, orgName }: SidebarProps) {
   const pathname = usePathname();
 
-  // 2. Define Admin-only links
   const adminNav = [
     { name: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
     { name: "Active Workflows", href: "/app/workflows", icon: Activity },
@@ -34,23 +34,19 @@ export default function Sidebar({ userRole, userName, orgName }: SidebarProps) {
     { name: "Settings", href: "/app/settings", icon: Settings },
   ];
 
-  // 3. Define Employee-only links
   const employeeNav = [
     { name: "My Onboarding", href: "/app/dashboard", icon: LayoutDashboard },
   ];
 
-  // 4. Pick the right array based on the role
   const navigation = userRole === "EMPLOYEE" ? employeeNav : adminNav;
 
   return (
     <div className="flex h-full w-64 flex-col bg-slate-900 text-white shadow-xl">
-      {/* Brand Header */}
       <div className="flex h-16 items-center gap-2 px-6 font-bold text-xl tracking-tight border-b border-slate-800">
         <Hexagon className="h-6 w-6 text-blue-500 fill-blue-500/20" />
         <span>Harmony OP</span>
       </div>
 
-      {/* Navigation Links */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map((item) => {
           const isActive = pathname.startsWith(item.href);
@@ -73,16 +69,28 @@ export default function Sidebar({ userRole, userName, orgName }: SidebarProps) {
         })}
       </nav>
 
-      {/* Dynamic User Profile Area */}
+      {/* 3. Updated Profile Area with Logout Button */}
       <div className="border-t border-slate-800 p-4">
-        <div className="flex items-center gap-3 rounded-md bg-slate-800/50 p-3 border border-slate-700/50">
-          <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-            <UserCircle className="h-5 w-5" />
+        <div className="flex items-center justify-between rounded-md bg-slate-800/50 p-3 border border-slate-700/50">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold flex-shrink-0">
+              <UserCircle className="h-5 w-5" />
+            </div>
+            <div className="flex flex-col truncate pr-2">
+              <span className="text-sm font-medium text-white truncate">{userName}</span>
+              <span className="text-xs text-slate-400 truncate">{userRole === "EMPLOYEE" ? orgName : `Admin • ${orgName}`}</span>
+            </div>
           </div>
-          <div className="flex flex-col truncate">
-            <span className="text-sm font-medium text-white truncate">{userName}</span>
-            <span className="text-xs text-slate-400 truncate">{userRole === "EMPLOYEE" ? orgName : `Admin • ${orgName}`}</span>
-          </div>
+          
+          <form action={signOutAction}>
+            <button 
+              type="submit" 
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-md transition-colors"
+              title="Log out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
         </div>
       </div>
     </div>
