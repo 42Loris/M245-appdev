@@ -8,6 +8,7 @@ import ActiveWorkflowsTable from "@/components/dashboard/ActiveWorkflowsTable";
 import { StatCard } from "@/components/ui/StatCard";
 import { seedDashboardData } from "@/actions/seed";
 import { Button } from "@/components/ui/button";
+import { users, onboardingWorkflows, onboardingProfiles } from "@/db/schema";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -46,6 +47,10 @@ export default async function DashboardPage() {
 const totalOnboardings = activeWorkflows.length;
     const pendingITTasks = activeWorkflows.flatMap((w: any) => w.tasks || []).filter((t: any) => t.taskType === "IT_ACCESS" && t.status !== "DONE").length;
 
+    const profiles = await db.query.onboardingProfiles.findMany({
+  where: eq(onboardingProfiles.orgId, dbUser.orgId),
+});
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-8">
@@ -54,7 +59,7 @@ const totalOnboardings = activeWorkflows.length;
           <p className="text-sm text-slate-500">Overview for {dbUser.department}</p>
         </div>
         {/* Replace the old static Button with our new Component */}
-        <TriggerOnboardingButton />
+        <TriggerOnboardingButton profiles={profiles} />
         </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

@@ -2,23 +2,21 @@
 "use server";
 
 import { db } from "@/db";
-import { users, onboardingWorkflows, workflowTasks } from "@/db/schema";
+import { users, onboardingWorkflows, workflowTasks, onboardingProfiles } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 
-// 1. Strict Payload Validation
+// 1. Updated Schema to expect a profileId
 const TriggerSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
-  roleTitle: z.string().min(2, "Role is required"),
-  department: z.string().min(2, "Department is required"),
+  profileId: z.string().min(1, "Please select a role profile"),
   startDate: z.string().min(1, "Start date is required"),
 });
 
 export async function triggerOnboardingAction(prevState: any, formData: FormData) {
-  // 2. Auth & Tenant Context
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
@@ -26,29 +24,30 @@ export async function triggerOnboardingAction(prevState: any, formData: FormData
   const hrUser = await db.query.users.findFirst({
     where: eq(users.authId, user.id),
   });
-  
   if (!hrUser) return { error: "Tenant connection not found" };
 
-  // 3. Defensively parse FormData (convert nulls to empty strings)
   const payload = {
     name: formData.get("name")?.toString() || "",
     email: formData.get("email")?.toString() || "",
-    roleTitle: formData.get("roleTitle")?.toString() || "",
-    department: formData.get("department")?.toString() || "",
+    profileId: formData.get("profileId")?.toString() || "",
     startDate: formData.get("startDate")?.toString() || "",
   };
 
   const parsed = TriggerSchema.safeParse(payload);
-  
-  // FIX: Safely access the Zod issues array with optional chaining
   if (!parsed.success) {
     return { error: parsed.error.issues?.[0]?.message || "Please fill out all fields correctly." };
   }
 
-  const { name, email, roleTitle, department, startDate } = parsed.data;
+  const { name, email, profileId, startDate } = parsed.data;
 
   try {
-    // 4. Atomic Database Transaction
+    // Fetch the selected profile to get the standard role and department
+    const profile = await db.query.onboardingProfiles.findFirst({
+      where: eq(onboardingProfiles.id, profileId)
+    });
+
+    if (!profile) return { error: "Selected profile not found." };
+
     await db.transaction(async (tx) => {
       // Create the New Hire Profile
       const [newHire] = await tx.insert(users).values({
@@ -56,20 +55,21 @@ export async function triggerOnboardingAction(prevState: any, formData: FormData
         email,
         name,
         role: "EMPLOYEE",
-        department,
+        department: profile.department, // Auto-mapped from profile
       }).returning();
 
       // Initiate the Workflow
       const [workflow] = await tx.insert(onboardingWorkflows).values({
         orgId: hrUser.orgId,
         newHireId: newHire.id,
-        roleTitle,
-        department,
+        profileId: profile.id, // Link it to the profile
+        roleTitle: profile.roleTitle, // Auto-mapped from profile
+        department: profile.department, // Auto-mapped from profile
         startDate: new Date(startDate),
         progressRatio: 0,
       }).returning();
 
-      // Automatically assign standard IT & HR tasks
+      // For now, auto-assign standard tasks. (We can make this dynamic per-profile later!)
       await tx.insert(workflowTasks).values([
         { workflowId: workflow.id, title: "Create AD & Email Account", taskType: "IT_ACCESS", status: "PENDING" },
         { workflowId: workflow.id, title: "Order Laptop & Peripherals", taskType: "HARDWARE", status: "PENDING" },
@@ -77,7 +77,6 @@ export async function triggerOnboardingAction(prevState: any, formData: FormData
       ]);
     });
 
-    // 5. Instantly update the UI
     revalidatePath("/app/dashboard");
     return { success: true, timestamp: Date.now() }; 
 
