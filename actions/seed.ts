@@ -51,6 +51,9 @@ export async function seedDashboardData() {
     { workflowId: w3.id, title: "Laptop", taskType: "HARDWARE", status: "PENDING" },
   ]);
 
-  revalidatePath("/app/dashboard");
-  return { success: true };
-}
+revalidatePath("/app/dashboard");
+    // Return nothing (void) to satisfy Next.js 15 form action typings
+  } catch (error) {
+    console.error("Seed error:", error);
+    // Return nothing (void)
+  }
