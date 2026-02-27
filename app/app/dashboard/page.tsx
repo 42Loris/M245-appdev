@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import ActiveWorkflowsTable from "@/components/dashboard/ActiveWorkflowsTable";
 import { StatCard } from "@/components/ui/StatCard";
 import { seedDashboardData } from "@/actions/seed";
+import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
