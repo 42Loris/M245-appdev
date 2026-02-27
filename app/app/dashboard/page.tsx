@@ -43,8 +43,8 @@ export default async function DashboardPage() {
     orderBy: (workflows, { desc }) => [desc(workflows.createdAt)],
   });
 
-  const totalOnboardings = activeWorkflows.length;
-  const pendingITTasks = activeWorkflows.flatMap(w => w.tasks).filter(t => t.taskType === "IT_ACCESS" && t.status !== "DONE").length;
+const totalOnboardings = activeWorkflows.length;
+    const pendingITTasks = activeWorkflows.flatMap((w: any) => w.tasks || []).filter((t: any) => t.taskType === "IT_ACCESS" && t.status !== "DONE").length;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
