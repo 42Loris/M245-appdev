@@ -25,11 +25,11 @@ export default async function TasksPage() {
     },
   });
 
-  // Flatten and filter the tasks for the IT Board
-  const itTasks = workflows.flatMap((wf) => 
-    wf.tasks
-      .filter((t) => t.taskType === "IT_ACCESS" || t.taskType === "HARDWARE")
-      .map((t) => ({
+// Flatten and filter the tasks for the IT Board
+  const itTasks = workflows.flatMap((wf: any) => 
+    (wf.tasks || [])
+      .filter((t: any) => t.taskType === "IT_ACCESS" || t.taskType === "HARDWARE")
+      .map((t: any) => ({
         ...t,
         employeeName: wf.newHire.name,
         role: wf.roleTitle,

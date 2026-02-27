@@ -25,11 +25,11 @@ export default async function HRTasksPage() {
     },
   });
 
-  // Flatten and filter the tasks for the HR Board
-  const hrTasks = workflows.flatMap((wf) => 
-    wf.tasks
-      .filter((t) => t.taskType === "HR_ADMIN")
-      .map((t) => ({
+// Flatten and filter the tasks for the HR Board
+  const hrTasks = workflows.flatMap((wf: any) => 
+    (wf.tasks || [])
+      .filter((t: any) => t.taskType === "HR_ADMIN")
+      .map((t: any) => ({
         ...t,
         employeeName: wf.newHire.name,
         role: wf.roleTitle,
