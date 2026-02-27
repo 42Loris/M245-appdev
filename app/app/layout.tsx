@@ -18,12 +18,9 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  // Fetch the user from Postgres to get their Role and Name
+  // Fetch the user from Postgres (removed the unmapped relation)
   const dbUser = await db.query.users.findFirst({
     where: eq(users.authId, user.id),
-    with: {
-      organization: true, // Assuming you want to display the Org Name
-    }
   });
 
   if (!dbUser) {
@@ -36,7 +33,7 @@ export default async function AppLayout({
       <Sidebar 
         userRole={dbUser.role} 
         userName={dbUser.name} 
-        orgName={dbUser.organization?.name || "Harmony OP"} 
+        orgName="Harmony OP" 
       />
       
       <main className="flex-1 overflow-y-auto">
