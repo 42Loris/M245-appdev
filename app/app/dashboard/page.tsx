@@ -84,7 +84,7 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-900">Active Workflows</h2>
         </div>
         <div className="p-6">
-          <ActiveWorkflowsTable workflows={activeWorkflows} />
+          <ActiveWorkflowsTable data={activeWorkflows} />
         </div>
       </div>
     </div>
