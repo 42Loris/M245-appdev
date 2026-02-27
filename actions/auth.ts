@@ -16,8 +16,9 @@ export async function loginAction(formData: FormData) {
 
   const parsed = LoginSchema.safeParse({ email, password });
   
+  // FIX: Access Zod's 'issues' array safely to satisfy strict TypeScript
   if (!parsed.success) {
-    return { error: parsed.error.errors[0].message };
+    return { error: parsed.error.issues?.[0]?.message || "Invalid credentials" };
   }
 
   // MUST await createClient now
