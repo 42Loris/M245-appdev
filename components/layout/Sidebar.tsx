@@ -10,24 +10,40 @@ import {
   CheckSquare, 
   Settings,
   Hexagon,
-  ClipboardCheck
+  ClipboardCheck,
+  UserCircle
 } from "lucide-react";
 
+// 1. Define the props we expect from the server layout
+type SidebarProps = {
+  userRole: string;
+  userName: string;
+  orgName: string;
+};
 
-const navigation = [
-  { name: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
-  { name: "Active Workflows", href: "/app/workflows", icon: Activity },
-  { name: "IT Tasks", href: "/app/tasks", icon: CheckSquare },
-  { name: "HR Tasks", href: "/app/hr-tasks", icon: ClipboardCheck }, // <-- Add this
-  { name: "Profiles", href: "/app/profiles", icon: Users },
-  { name: "Settings", href: "/app/settings", icon: Settings },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ userRole, userName, orgName }: SidebarProps) {
   const pathname = usePathname();
 
+  // 2. Define Admin-only links
+  const adminNav = [
+    { name: "Dashboard", href: "/app/dashboard", icon: LayoutDashboard },
+    { name: "Active Workflows", href: "/app/workflows", icon: Activity },
+    { name: "IT Tasks", href: "/app/tasks", icon: CheckSquare },
+    { name: "HR Tasks", href: "/app/hr-tasks", icon: ClipboardCheck },
+    { name: "Profiles", href: "/app/profiles", icon: Users },
+    { name: "Settings", href: "/app/settings", icon: Settings },
+  ];
+
+  // 3. Define Employee-only links
+  const employeeNav = [
+    { name: "My Onboarding", href: "/app/dashboard", icon: LayoutDashboard },
+  ];
+
+  // 4. Pick the right array based on the role
+  const navigation = userRole === "EMPLOYEE" ? employeeNav : adminNav;
+
   return (
-    <div className="flex h-full w-64 flex-col bg-slate-900 text-white">
+    <div className="flex h-full w-64 flex-col bg-slate-900 text-white shadow-xl">
       {/* Brand Header */}
       <div className="flex h-16 items-center gap-2 px-6 font-bold text-xl tracking-tight border-b border-slate-800">
         <Hexagon className="h-6 w-6 text-blue-500 fill-blue-500/20" />
@@ -57,15 +73,15 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User Profile / Tenant Area (Placeholder for now) */}
+      {/* Dynamic User Profile Area */}
       <div className="border-t border-slate-800 p-4">
-        <div className="flex items-center gap-3 rounded-md bg-slate-800 p-3">
-          <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center font-bold text-xs">
-            HR
+        <div className="flex items-center gap-3 rounded-md bg-slate-800/50 p-3 border border-slate-700/50">
+          <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+            <UserCircle className="h-5 w-5" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-white">Admin User</span>
-            <span className="text-xs text-slate-400">Muster AG</span>
+          <div className="flex flex-col truncate">
+            <span className="text-sm font-medium text-white truncate">{userName}</span>
+            <span className="text-xs text-slate-400 truncate">{userRole === "EMPLOYEE" ? orgName : `Admin • ${orgName}`}</span>
           </div>
         </div>
       </div>
