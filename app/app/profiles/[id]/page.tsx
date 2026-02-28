@@ -29,6 +29,12 @@ export default async function ProfileDetailsPage({ params }: { params: { id: str
     }
   };
 
+  // === THE FIX: Wrapper function to satisfy TypeScript's strict void requirement ===
+  const handleAddTask = async (formData: FormData) => {
+    "use server";
+    await addProfileTaskAction(formData);
+  };
+
   return (
     <div className="p-8 max-w-4xl mx-auto min-h-screen">
       <div className="mb-6">
@@ -79,7 +85,8 @@ export default async function ProfileDetailsPage({ params }: { params: { id: str
               <Plus className="h-4 w-4" /> Add New Task
             </h3>
             
-            <form action={addProfileTaskAction} className="space-y-4">
+            {/* Using the wrapper function here instead of the direct action */}
+            <form action={handleAddTask} className="space-y-4">
               <input type="hidden" name="profileId" value={profile.id} />
               
               <div>
