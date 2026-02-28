@@ -14,9 +14,9 @@ export default async function HRTasksPage() {
   const dbUser = await db.query.users.findFirst({
     where: eq(users.authId, user.id),
   });
-  if (!dbUser) redirect("/app/dashboard");
+  if (!dbUser || dbUser.role === "EMPLOYEE") redirect("/app/dashboard");
 
-  // Fetch workflows and strictly include ONLY HR Administration tasks
+  // Fetch workflows and strictly include ONLY HR tasks
   const workflows = await db.query.onboardingWorkflows.findMany({
     where: eq(onboardingWorkflows.orgId, dbUser.orgId),
     with: {
@@ -25,13 +25,13 @@ export default async function HRTasksPage() {
     },
   });
 
-// Flatten and filter the tasks for the HR Board
+  // Flatten and filter the tasks for the HR Board
   const hrTasks = workflows.flatMap((wf: any) => 
     (wf.tasks || [])
       .filter((t: any) => t.taskType === "HR_ADMIN")
       .map((t: any) => ({
         ...t,
-        employeeName: wf.newHire.name,
+        employeeName: wf.newHire?.name || "Unknown",
         role: wf.roleTitle,
       }))
   );
@@ -45,7 +45,7 @@ export default async function HRTasksPage() {
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">HR Administration Tasks</h1>
-        <p className="text-sm text-slate-500">Manage payroll setup, contract signing, and welcome packages.</p>
+        <p className="text-sm text-slate-500">Manage payroll setup, contracts, and welcome packages.</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -64,7 +64,7 @@ export default async function HRTasksPage() {
         </div>
 
         {/* IN PROGRESS / BLOCKED COLUMN */}
-        <div className="bg-slate-100 rounded-lg p-4 border-t-4 border-purple-500">
+        <div className="bg-slate-100 rounded-lg p-4 border-t-4 border-blue-500">
           <div className="flex items-center justify-between mb-4 px-1">
             <h2 className="font-semibold text-slate-700">In Progress</h2>
             <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-1 rounded-full">{inProgressTasks.length}</span>
