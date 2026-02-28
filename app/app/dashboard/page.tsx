@@ -1,12 +1,13 @@
 // app/app/dashboard/page.tsx
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
-import { users, onboardingWorkflows } from "@/db/schema";
+import { users, onboardingWorkflows, organizationIntegrations } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, CheckCircle2, Clock, Activity } from "lucide-react";
 import Link from "next/link";
+import SyncButton from "@/components/dashboard/SyncButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,6 +18,12 @@ export default async function DashboardPage() {
     where: eq(users.authId, user.id),
   });
   if (!dbUser) redirect("/login");
+
+  // Check if this organization has connected their Microsoft Tenant
+  const integration = await db.query.organizationIntegrations.findFirst({
+    where: eq(organizationIntegrations.orgId, dbUser.orgId)
+  });
+  const hasIntegration = !!integration;
 
   // Fetch active workflows and their nested tasks for this organization
   const activeWorkflows = await db.query.onboardingWorkflows.findMany({
@@ -43,9 +50,15 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold text-slate-900">Welcome back, {dbUser.name.split(" ")[0]}</h1>
-        <p className="text-sm text-slate-500 mt-1">Here is what is happening with your onboardings today.</p>
+      {/* Updated Header with conditional Sync Button */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Welcome back, {dbUser.name.split(" ")[0]}</h1>
+          <p className="text-sm text-slate-500 mt-1">Here is what is happening with your onboardings today.</p>
+        </div>
+        
+        {/* Only show the manual sync button if they have configured the integration */}
+        {hasIntegration && <SyncButton />}
       </header>
 
       {/* Top Stats Row */}
