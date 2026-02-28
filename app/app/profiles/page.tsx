@@ -7,7 +7,8 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Network } from "lucide-react";
-import CreateProfileModal from "@/components/profiles/CreateProfileModal"; // <-- Added Import
+import CreateProfileModal from "@/components/profiles/CreateProfileModal";
+import Link from "next/link"; // <-- Added Import for clickable cards
 
 export default async function ProfilesPage() {
   const supabase = await createClient();
@@ -47,40 +48,43 @@ export default async function ProfilesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {profiles.map((profile) => (
-            <Card key={profile.id} className="relative overflow-hidden hover:shadow-md transition-shadow border-slate-200">
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <Badge variant="secondary" className="bg-slate-100 text-slate-600 hover:bg-slate-200">
-                    {profile.department}
-                  </Badge>
-                  <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
-                    <Shield className="h-3 w-3" /> {profile.defaultTasks?.length || 0} Tasks
-                  </span>
-                </div>
-                <CardTitle className="text-lg">{profile.name}</CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  Standard equipment and access provisioning template.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="bg-slate-50 border-t p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Network className={`h-4 w-4 ${profile.entraGroupId ? "text-blue-500" : "text-slate-400"}`} />
-                    <span className="text-xs font-medium text-slate-700">Entra ID Mapping</span>
+            // WRAPPED IN A LINK COMPONENT HERE:
+            <Link href={`/app/profiles/${profile.id}`} key={profile.id} className="block group">
+              <Card className="relative overflow-hidden group-hover:shadow-md transition-all group-hover:border-blue-200 border-slate-200 h-full">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <Badge variant="secondary" className="bg-slate-100 text-slate-600 group-hover:bg-slate-200 transition-colors">
+                      {profile.department}
+                    </Badge>
+                    <span className="text-xs font-medium text-slate-400 flex items-center gap-1">
+                      <Shield className="h-3 w-3" /> {profile.defaultTasks?.length || 0} Tasks
+                    </span>
                   </div>
-                  
-                  {profile.entraGroupId ? (
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
-                      Mapped
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-slate-400 border-slate-200 border-dashed">
-                      Unmapped
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  <CardTitle className="text-lg group-hover:text-blue-700 transition-colors">{profile.name}</CardTitle>
+                  <CardDescription className="text-xs mt-1">
+                    Standard equipment and access provisioning template.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="bg-slate-50 border-t p-4 h-full">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Network className={`h-4 w-4 ${profile.entraGroupId ? "text-blue-500" : "text-slate-400"}`} />
+                      <span className="text-xs font-medium text-slate-700">Entra ID Mapping</span>
+                    </div>
+                    
+                    {profile.entraGroupId ? (
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
+                        Mapped
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-slate-400 border-slate-200 border-dashed">
+                        Unmapped
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
