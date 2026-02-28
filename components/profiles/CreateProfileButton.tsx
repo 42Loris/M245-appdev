@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { createProfileAction } from "@/actions/profiles";
+import { createProfileAction, type ProfileFormState } from "@/actions/profiles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 
+// 1. Define the exact initial state matching the server action
+const initialState: ProfileFormState = { 
+  error: null, 
+  success: false, 
+  timestamp: 0 
+};
+
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -28,13 +35,16 @@ function SubmitButton() {
 
 export default function CreateProfileButton() {
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useActionState(createProfileAction, null);
+  
+  // 2. Pass initialState instead of null
+  const [state, formAction] = useActionState(createProfileAction, initialState);
 
+  // 3. Update the useEffect to cleanly read the state
   useEffect(() => {
-    if (state?.success) {
+    if (state.success && state.timestamp) {
       setOpen(false);
     }
-  }, [state]);
+  }, [state.success, state.timestamp]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -54,8 +64,9 @@ export default function CreateProfileButton() {
 
         <form action={formAction} className="space-y-4 pt-4">
           <div className="grid gap-2">
-            <Label htmlFor="roleTitle">Role Title</Label>
-            <Input id="roleTitle" name="roleTitle" placeholder="e.g. Senior Frontend Engineer" required />
+            <Label htmlFor="name">Role Title</Label>
+            {/* 4. Changed id and name from "roleTitle" to "name" to match the backend! */}
+            <Input id="name" name="name" placeholder="e.g. Senior Frontend Engineer" required />
           </div>
           
           <div className="grid gap-2">
@@ -63,7 +74,7 @@ export default function CreateProfileButton() {
             <Input id="department" name="department" placeholder="e.g. Engineering" required />
           </div>
 
-          {state?.error && (
+          {state.error && (
             <p className="text-sm font-medium text-red-500 bg-red-50 p-2 rounded">{state.error}</p>
           )}
 
