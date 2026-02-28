@@ -2,14 +2,14 @@
 "use server";
 
 import { db } from "@/db";
-import { onboardingProfiles, users } from "@/db/schema";
+import { roleProfiles, users } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 
 const ProfileSchema = z.object({
-  roleTitle: z.string().min(2, "Role title is required"),
+  name: z.string().min(2, "Profile name is required"),
   department: z.string().min(2, "Department is required"),
 });
 
@@ -25,7 +25,7 @@ export async function createProfileAction(prevState: any, formData: FormData) {
   if (!hrUser) return { error: "Tenant not found" };
 
   const payload = {
-    roleTitle: formData.get("roleTitle")?.toString() || "",
+    name: formData.get("name")?.toString() || "",
     department: formData.get("department")?.toString() || "",
   };
 
@@ -35,9 +35,10 @@ export async function createProfileAction(prevState: any, formData: FormData) {
   }
 
   try {
-    await db.insert(onboardingProfiles).values({
+    // Insert into the new Microsoft-ready table!
+    await db.insert(roleProfiles).values({
       orgId: hrUser.orgId,
-      roleTitle: parsed.data.roleTitle,
+      name: parsed.data.name,
       department: parsed.data.department,
     });
 

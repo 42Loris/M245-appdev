@@ -6,7 +6,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Shield, Network } from "lucide-react";
+import { Shield, Network } from "lucide-react";
+import CreateProfileModal from "@/components/profiles/CreateProfileModal"; // <-- Added Import
 
 export default async function ProfilesPage() {
   const supabase = await createClient();
@@ -18,11 +19,11 @@ export default async function ProfilesPage() {
   });
   if (!dbUser || dbUser.role === "EMPLOYEE") redirect("/app/dashboard");
 
-  // 1. Hole alle echten Profile für diese Organisation aus der Datenbank
+  // Fetch real profiles from the new Entra-ready table
   const profiles = await db.query.roleProfiles.findMany({
     where: eq(roleProfiles.orgId, dbUser.orgId),
     with: {
-      defaultTasks: true, // Zieht die verknüpften Aufgaben direkt mit
+      defaultTasks: true, 
     },
   });
 
@@ -33,9 +34,10 @@ export default async function ProfilesPage() {
           <h1 className="text-2xl font-bold text-slate-900">Role Profiles</h1>
           <p className="text-sm text-slate-500">Manage onboarding templates and Microsoft Entra group mappings.</p>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-          <Plus className="h-4 w-4" /> New Profile
-        </button>
+        
+        {/* Render the interactive Modal component instead of a static button */}
+        <CreateProfileModal />
+        
       </header>
 
       {profiles.length === 0 ? (
