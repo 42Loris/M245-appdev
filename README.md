@@ -22,4 +22,4 @@ Harmony OP is a modern, automated Employee Onboarding platform. It bridges the g
 2. Run `npm install` to install dependencies.
 3. Copy `.env.example` to `.env.local` and add your Supabase and Database credentials.
 4. Run `npx drizzle-kit push` to apply the database schema.
-5. Run `npm run dev` to start the local development server at `localhost:3000`.
+5. Run `npm run dev` to start the local development server at `localhost:3000`..
