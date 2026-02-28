@@ -3,10 +3,15 @@
 
 import { useState, useEffect } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { createProfileAction } from "@/actions/profiles";
+import { createProfileAction, type ProfileFormState } from "@/actions/profiles";
 import { Plus, X } from "lucide-react";
 
-const initialState = { error: null as string | null, success: false, timestamp: 0 };
+// Strictly type the initial state
+const initialState: ProfileFormState = { 
+  error: null, 
+  success: false, 
+  timestamp: 0 
+};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
