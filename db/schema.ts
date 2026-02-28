@@ -116,3 +116,23 @@ export const profileTasksRelations = relations(profileTasks, ({ one }) => ({
     references: [roleProfiles.id],
   }),
 }));
+
+// === NEW: Integrations Table ===
+export const organizationIntegrations = pgTable("organization_integrations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orgId: uuid("org_id").notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  provider: text("provider").notNull(), // e.g., "MICROSOFT_ENTRA"
+  tenantId: text("tenant_id"),
+  clientId: text("client_id"),
+  clientSecret: text("client_secret"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Update the relations for this new table
+export const organizationIntegrationsRelations = relations(organizationIntegrations, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationIntegrations.orgId],
+    references: [organizations.id],
+  }),
+}));
