@@ -25,7 +25,7 @@ export const users = pgTable("users", {
   authId: text("auth_id"), 
 });
 
-// Role-Based Onboarding Profiles 
+// Role-Based Onboarding Profiles (Old/Legacy version - keeping to avoid breaking changes)
 export const onboardingProfiles = pgTable("onboarding_profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
   orgId: uuid("org_id").notNull().references(() => organizations.id),
@@ -34,7 +34,7 @@ export const onboardingProfiles = pgTable("onboarding_profiles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Active Workflows (Event-driven trigger) - UNIFIED DEFINITION
+// Active Workflows (Event-driven trigger)
 export const onboardingWorkflows = pgTable("onboarding_workflows", {
   id: uuid("id").primaryKey().defaultRandom(),
   orgId: uuid("org_id").notNull().references(() => organizations.id),
@@ -58,7 +58,31 @@ export const workflowTasks = pgTable("workflow_tasks", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Relations 
+// === NEW: Role Profiles (Templates for Entra ID Sync) ===
+export const roleProfiles = pgTable("role_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orgId: uuid("org_id").notNull().references(() => organizations.id),
+  name: text("name").notNull(), // e.g., "Software Engineer"
+  department: text("department").notNull(), // e.g., "Engineering"
+  entraGroupId: text("entra_group_id"), // e.g., "8a7b3c2d..." (from Microsoft)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// === NEW: Profile Tasks (Default tasks for a template) ===
+export const profileTasks = pgTable("profile_tasks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  profileId: uuid("profile_id").notNull().references(() => roleProfiles.id, { onDelete: 'cascade' }),
+  title: text("title").notNull(), // e.g., "Assign GitHub License"
+  taskType: text("task_type").notNull(), // Needs to match taskTypeEnum logic
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+
+// =====================
+// === RELATIONS ===
+// =====================
+
 export const usersRelations = relations(users, ({ many }) => ({
   workflows: many(onboardingWorkflows),
 }));
@@ -75,5 +99,20 @@ export const workflowTasksRelations = relations(workflowTasks, ({ one }) => ({
   workflow: one(onboardingWorkflows, {
     fields: [workflowTasks.workflowId],
     references: [onboardingWorkflows.id],
+  }),
+}));
+
+export const roleProfilesRelations = relations(roleProfiles, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [roleProfiles.orgId],
+    references: [organizations.id],
+  }),
+  defaultTasks: many(profileTasks),
+}));
+
+export const profileTasksRelations = relations(profileTasks, ({ one }) => ({
+  profile: one(roleProfiles, {
+    fields: [profileTasks.profileId],
+    references: [roleProfiles.id],
   }),
 }));
