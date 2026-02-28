@@ -61,46 +61,54 @@ export default async function DashboardPage() {
         {hasIntegration && <SyncButton />}
       </header>
 
-      {/* Top Stats Row */}
+      {/* Top Stats Row - NOW CLICKABLE WITH HOVER EFFECTS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Active Onboardings</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900">{totalActive}</div>
-            <p className="text-xs text-slate-500 mt-1">Currently in progress</p>
-          </CardContent>
-        </Card>
+        
+        <Link href="/app/workflows" className="block group">
+          <Card className="border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 h-full cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Active Onboardings</CardTitle>
+              <Users className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-900">{totalActive}</div>
+              <p className="text-xs text-slate-500 mt-1">Currently in progress</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Tasks Pending</CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900">{totalTasks - completedTasks}</div>
-            <p className="text-xs text-slate-500 mt-1">Across all departments</p>
-          </CardContent>
-        </Card>
+        <Link href="/app/it-tasks" className="block group">
+          <Card className="border-slate-200 shadow-sm hover:shadow-md hover:border-orange-300 transition-all duration-200 h-full cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-orange-600 transition-colors">Tasks Pending</CardTitle>
+              <Clock className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-900">{totalTasks - completedTasks}</div>
+              <p className="text-xs text-slate-500 mt-1">Across all departments</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Overall Progress</CardTitle>
-            <Activity className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900">{overallProgress}%</div>
-            {/* Tiny visual progress bar */}
-            <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-              <div 
-                className="bg-green-500 h-full rounded-full transition-all duration-500" 
-                style={{ width: `${overallProgress}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <Link href="/app/workflows" className="block group">
+          <Card className="border-slate-200 shadow-sm hover:shadow-md hover:border-green-300 transition-all duration-200 h-full cursor-pointer">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors">Overall Progress</CardTitle>
+              <Activity className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-slate-900">{overallProgress}%</div>
+              {/* Tiny visual progress bar */}
+              <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+                <div 
+                  className="bg-green-500 h-full rounded-full transition-all duration-500" 
+                  style={{ width: `${overallProgress}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
       </div>
 
       {/* Recent Onboardings List */}
