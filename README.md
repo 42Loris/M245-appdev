@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Harmony OP ⚙️
 
-## Getting Started
+Harmony OP is a modern, automated Employee Onboarding platform. It bridges the gap between IT and HR by directly integrating with Microsoft Entra ID (Active Directory) to automate role-based access, hardware provisioning, and HR tasks the moment a new employee is added to the system.
 
-First, run the development server:
+## ✨ Key Features
+* **Automated Directory Sync:** Connects to Microsoft Graph API to automatically detect new hires.
+* **Role-Based Profiles:** Map Microsoft Entra Groups to specific onboarding templates (e.g., "Software Engineer" gets GitHub access and a MacBook).
+* **Cross-Department Workflows:** Generates unified task lists for IT and HR on dedicated Kanban boards.
+* **Real-Time Dashboards:** Track onboarding completion progress at a glance.
+* **Multi-Tenant Architecture:** Securely supports multiple organizations/companies.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠️ Tech Stack
+* **Framework:** Next.js 15 (App Router, React 19)
+* **Database:** PostgreSQL hosted on Supabase
+* **ORM:** Drizzle ORM
+* **Authentication:** Supabase Auth
+* **Styling:** Tailwind CSS & shadcn/ui
+* **Deployment:** Vercel (with Vercel Cron for background syncs)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Getting Started
+1. Clone the repository.
+2. Run `npm install` to install dependencies.
+3. Copy `.env.example` to `.env.local` and add your Supabase and Database credentials.
+4. Run `npx drizzle-kit push` to apply the database schema.
+5. Run `npm run dev` to start the local development server at `localhost:3000`.

@@ -16,8 +16,8 @@ export default function SyncButton() {
       const data = await res.json();
       
       if (data.success) {
-        alert(data.message); // In a real app, you might use a nice Toast notification here
-        router.refresh(); // Refreshes the dashboard data!
+        alert(data.message); 
+        router.refresh(); 
       } else {
         alert(data.error || "Failed to sync");
       }
