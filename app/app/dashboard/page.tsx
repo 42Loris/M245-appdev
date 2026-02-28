@@ -1,91 +1,143 @@
 // app/app/dashboard/page.tsx
 import { db } from "@/db";
-import { eq, desc } from "drizzle-orm";
-import { users, onboardingWorkflows, onboardingProfiles } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { users, onboardingWorkflows } from "@/db/schema";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import ActiveWorkflowsTable from "@/components/dashboard/ActiveWorkflowsTable";
-import { StatCard } from "@/components/ui/StatCard";
-import { UserPlus, Clock, CheckCircle2 } from "lucide-react";
-import TriggerOnboardingButton from "@/components/dashboard/TriggerOnboardingButton";
-import { seedDashboardData } from "@/actions/seed";
-import { Button } from "@/components/ui/button";
-import EmployeeDashboard from "@/components/dashboard/EmployeeDashboard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, CheckCircle2, Clock, Activity } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
   const dbUser = await db.query.users.findFirst({
     where: eq(users.authId, user.id),
   });
+  if (!dbUser) redirect("/login");
 
-  if (!dbUser) {
-    return (
-      <div className="p-8 max-w-7xl mx-auto text-center mt-20">
-        <h2 className="text-2xl font-bold mb-4">Welcome to Harmony OP</h2>
-        <p className="text-slate-600 mb-6">Your tenant is not initialized yet.</p>
-        <form action={seedDashboardData}>
-          <Button type="submit" size="lg">Initialize Tenant & Generate Mock Data</Button>
-        </form>
-      </div>
-    );
-  }
-
-  // ==== EMPLOYEE VIEW ROUTING ====
-  if (dbUser.role === "EMPLOYEE") {
-    // Fetch specifically this employee's workflow
-    const myWorkflow = await db.query.onboardingWorkflows.findFirst({
-      where: eq(onboardingWorkflows.newHireId, dbUser.id),
-      with: { tasks: true },
-      orderBy: [desc(onboardingWorkflows.createdAt)],
-    });
-
-    return <EmployeeDashboard workflow={myWorkflow} userName={dbUser.name} />;
-  }
-
-  // ==== HR/ADMIN VIEW ROUTING (Existing Logic) ====
+  // Fetch active workflows and their nested tasks for this organization
   const activeWorkflows = await db.query.onboardingWorkflows.findMany({
     where: eq(onboardingWorkflows.orgId, dbUser.orgId),
     with: {
       newHire: true,
       tasks: true,
     },
-    orderBy: [desc(onboardingWorkflows.createdAt)],
+    orderBy: (workflows, { desc }) => [desc(workflows.createdAt)],
+    limit: 5,
   });
 
-  const profiles = await db.query.onboardingProfiles.findMany({
-    where: eq(onboardingProfiles.orgId, dbUser.orgId),
+  // Calculate high-level stats
+  const totalActive = activeWorkflows.length;
+  let totalTasks = 0;
+  let completedTasks = 0;
+
+  activeWorkflows.forEach(wf => {
+    totalTasks += wf.tasks.length;
+    completedTasks += wf.tasks.filter(t => t.status === "DONE").length;
   });
 
-  const totalOnboardings = activeWorkflows.length;
-  const pendingITTasks = activeWorkflows.flatMap((w: any) => w.tasks || []).filter((t: any) => t.taskType === "IT_ACCESS" && t.status !== "DONE").length;
+  const overallProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <header className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage active onboardings and system tasks.</p>
-        </div>
-        <TriggerOnboardingButton profiles={profiles} />
+    <div className="p-8 max-w-7xl mx-auto min-h-screen space-y-8">
+      <header>
+        <h1 className="text-3xl font-bold text-slate-900">Welcome back, {dbUser.name.split(" ")[0]}</h1>
+        <p className="text-sm text-slate-500 mt-1">Here is what is happening with your onboardings today.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard title="Active Onboardings" value={totalOnboardings} icon={<UserPlus className="h-4 w-4 text-blue-600" />} trend="+2 this week" />
-        <StatCard title="Pending IT Tasks" value={pendingITTasks} icon={<Clock className="h-4 w-4 text-amber-600" />} trend="Needs attention" />
-        <StatCard title="Completed (30d)" value={12} icon={<CheckCircle2 className="h-4 w-4 text-green-600" />} trend="98% SLA met" />
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Active Onboardings</CardTitle>
+            <Users className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{totalActive}</div>
+            <p className="text-xs text-slate-500 mt-1">Currently in progress</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Tasks Pending</CardTitle>
+            <Clock className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{totalTasks - completedTasks}</div>
+            <p className="text-xs text-slate-500 mt-1">Across all departments</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Overall Progress</CardTitle>
+            <Activity className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{overallProgress}%</div>
+            {/* Tiny visual progress bar */}
+            <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+              <div 
+                className="bg-green-500 h-full rounded-full transition-all duration-500" 
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-        <div className="px-6 py-5 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-900">Active Workflows</h2>
+      {/* Recent Onboardings List */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-slate-800">Recent Workflows</h2>
+          <Link href="/app/workflows" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            View all &rarr;
+          </Link>
         </div>
-        <div className="p-6">
-          <ActiveWorkflowsTable data={activeWorkflows} />
-        </div>
+        
+        {activeWorkflows.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center">
+            <CheckCircle2 className="h-12 w-12 text-slate-200 mb-3" />
+            <h3 className="text-slate-700 font-medium">No active onboardings</h3>
+            <p className="text-slate-500 text-sm mt-1">When Microsoft Sync detects a new user, they will appear here.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {activeWorkflows.map((workflow) => {
+              const wfTotal = workflow.tasks.length;
+              const wfDone = workflow.tasks.filter(t => t.status === "DONE").length;
+              const wfProgress = wfTotal === 0 ? 0 : Math.round((wfDone / wfTotal) * 100);
+
+              return (
+                <div key={workflow.id} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                  <div>
+                    <h3 className="font-bold text-slate-900">{workflow.newHire?.name || "Unknown User"}</h3>
+                    <p className="text-sm text-slate-500">{workflow.roleTitle} • {workflow.department}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-6 w-1/3 justify-end">
+                    <div className="flex-grow max-w-[150px]">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-500 font-medium">Progress</span>
+                        <span className="text-slate-700 font-bold">{wfProgress}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div 
+                          className="bg-blue-600 h-full rounded-full" 
+                          style={{ width: `${wfProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
