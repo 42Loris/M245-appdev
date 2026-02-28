@@ -61,62 +61,65 @@ export default async function DashboardPage() {
         {hasIntegration && <SyncButton />}
       </header>
 
-      {/* Top Stats Row - NOW WITH DEEP SHADOWS, LIFT EFFECT, AND CLICKABLE */}
+{/* Top Stats Row - BULLETPROOF CLICKABLE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Card 1: Active Onboardings */}
-        <Link href="/app/workflows" className="block outline-none group">
-          <Card className="border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 h-full cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">
-                Active Onboardings
-              </CardTitle>
-              <Users className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{totalActive}</div>
-              <p className="text-xs text-slate-500 mt-1">Currently in progress</p>
-            </CardContent>
-          </Card>
-        </Link>
+        <Card className="relative border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 transition-all duration-300 h-full group">
+          {/* The Invisible Stretched Link */}
+          <Link href="/app/workflows" className="absolute inset-0 z-10 cursor-pointer" aria-label="View Active Onboardings" />
+          
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">
+              Active Onboardings
+            </CardTitle>
+            <Users className="h-4 w-4 text-blue-600 transition-transform group-hover:scale-110 duration-300" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{totalActive}</div>
+            <p className="text-xs text-slate-500 mt-1">Currently in progress</p>
+          </CardContent>
+        </Card>
 
         {/* Card 2: Tasks Pending */}
-        <Link href="/app/workflows" className="block outline-none group">
-          <Card className="border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-orange-300 transition-all duration-300 h-full cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-orange-600 transition-colors">
-                Tasks Pending
-              </CardTitle>
-              <Clock className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{totalTasks - completedTasks}</div>
-              <p className="text-xs text-slate-500 mt-1">Across all departments</p>
-            </CardContent>
-          </Card>
-        </Link>
+        <Card className="relative border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-orange-300 transition-all duration-300 h-full group">
+          {/* The Invisible Stretched Link */}
+          <Link href="/app/workflows" className="absolute inset-0 z-10 cursor-pointer" aria-label="View Tasks Pending" />
+          
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-orange-600 transition-colors">
+              Tasks Pending
+            </CardTitle>
+            <Clock className="h-4 w-4 text-orange-500 transition-transform group-hover:scale-110 duration-300" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{totalTasks - completedTasks}</div>
+            <p className="text-xs text-slate-500 mt-1">Across all departments</p>
+          </CardContent>
+        </Card>
 
         {/* Card 3: Overall Progress */}
-        <Link href="/app/workflows" className="block outline-none group">
-          <Card className="border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-green-300 transition-all duration-300 h-full cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors">
-                Overall Progress
-              </CardTitle>
-              <Activity className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{overallProgress}%</div>
-              {/* Tiny visual progress bar */}
-              <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-                <div 
-                  className="bg-green-500 h-full rounded-full transition-all duration-500" 
-                  style={{ width: `${overallProgress}%` }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+        <Card className="relative border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-green-300 transition-all duration-300 h-full group">
+          {/* The Invisible Stretched Link */}
+          <Link href="/app/workflows" className="absolute inset-0 z-10 cursor-pointer" aria-label="View Overall Progress" />
+          
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors">
+              Overall Progress
+            </CardTitle>
+            <Activity className="h-4 w-4 text-green-500 transition-transform group-hover:scale-110 duration-300" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-slate-900">{overallProgress}%</div>
+            {/* Tiny visual progress bar */}
+            <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+              <div 
+                className="bg-green-500 h-full rounded-full transition-all duration-500" 
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
       </div>
 
