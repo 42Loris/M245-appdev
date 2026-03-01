@@ -7,10 +7,14 @@ import Link from "next/link";
 import { ArrowLeft, Plus, Laptop, Users, GraduationCap, ClipboardList } from "lucide-react";
 import { addProfileTaskAction } from "@/actions/profile-tasks";
 
-export default async function ProfileDetailsPage({ params }: { params: { id: string } }) {
-  // Fetch the specific profile and its tasks
+// Fix: In Next.js 15, params is a Promise!
+export default async function ProfileDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  // Fix: Await the params before extracting the ID
+  const { id } = await params;
+
+  // Fetch the specific profile and its tasks using the awaited ID
   const profile = await db.query.roleProfiles.findFirst({
-    where: eq(roleProfiles.id, params.id),
+    where: eq(roleProfiles.id, id),
     with: {
       defaultTasks: true,
     },
@@ -29,7 +33,7 @@ export default async function ProfileDetailsPage({ params }: { params: { id: str
     }
   };
 
-  // === THE FIX: Wrapper function to satisfy TypeScript's strict void requirement ===
+  // Wrapper function to satisfy TypeScript's strict void requirement
   const handleAddTask = async (formData: FormData) => {
     "use server";
     await addProfileTaskAction(formData);
@@ -85,7 +89,6 @@ export default async function ProfileDetailsPage({ params }: { params: { id: str
               <Plus className="h-4 w-4" /> Add New Task
             </h3>
             
-            {/* Using the wrapper function here instead of the direct action */}
             <form action={handleAddTask} className="space-y-4">
               <input type="hidden" name="profileId" value={profile.id} />
               
