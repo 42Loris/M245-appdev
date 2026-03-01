@@ -1,8 +1,8 @@
 // components/profiles/CreateProfileModal.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useState, useEffect, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { createProfileAction, type ProfileFormState } from "@/actions/profiles";
 import { Plus, X } from "lucide-react";
 
@@ -28,7 +28,7 @@ function SubmitButton() {
 
 export default function CreateProfileModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [state, formAction] = useFormState(createProfileAction, initialState);
+  const [state, formAction] = useActionState(createProfileAction, initialState);
 
   // Close the modal automatically if the action returns success
   useEffect(() => {

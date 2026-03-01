@@ -1,4 +1,6 @@
 // app/app/settings/page.tsx
+import Link from "next/link";
+
 export default function SettingsPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto min-h-screen">
@@ -13,14 +15,18 @@ export default function SettingsPage() {
         <div className="border border-slate-200 rounded-lg p-6 flex items-center justify-between">
           <div>
             <h4 className="font-semibold text-slate-900 flex items-center gap-2">
-              Microsoft Entra ID (SSO)
-              <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Upcoming</span>
+              Microsoft Entra ID (Active Directory)
+              <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Available</span>
             </h4>
             <p className="text-sm text-slate-500 mt-1">Automatically sync users and groups directly from your Microsoft Tenant.</p>
           </div>
-          <button className="px-4 py-2 bg-slate-100 text-slate-400 font-medium rounded-md cursor-not-allowed" disabled>
+          {/* This now links directly to the form we built! */}
+          <Link 
+            href="/app/settings/integrations" 
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+          >
             Connect Tenant
-          </button>
+          </Link>
         </div>
       </div>
     </div>
